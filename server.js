@@ -100,19 +100,27 @@ app.get("/api/users/:id/logs", async (req, res) => {
     } else {
       const jsonObject = { _id: user._id, username: user.username }
       const query = Exercise.find({ id: req.params.id })
+      let from
+      let to
 
       if (req.query.from) {
+        from = Date(req.query.from)
         query.where("date").gte(req.query.from)
+        jsonObject.from = from.toDateString
       }
 
       if (req.query.to) {
+        to = Date(req.query.to)
         query.where("date").lt(req.query.to)
+        jsonObject.to = to.toDateString
       }
 
-
       query.sort({ date: "desc" })
-      query.limit(req.query.limit)
 
+      if (req.query.limit) {
+        const limit = Number(req.query.limit)
+        if (!isNaN(limit)) query.limit(limit)
+      }
 
       query.exec((err, data) => {
         if (err) return console.error(err)
